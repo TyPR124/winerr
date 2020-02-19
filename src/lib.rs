@@ -119,6 +119,12 @@ impl Display for Error {
     }
 }
 
+impl From<Error> for std::io::Error {
+    fn from(e: Error) -> Self {
+        Self::from_raw_os_error(e.code() as i32)
+    }
+}
+
 #[test]
 fn test_fmt() {
     let err = Error::with_code(0);
