@@ -26,10 +26,15 @@
 use std::fmt::{self, Debug, Display, Formatter};
 use std::mem::MaybeUninit;
 
-use winapi::shared::ntdef::NULL;
-use winapi::um::{
-    errhandlingapi::GetLastError,
-    winbase::{FormatMessageW, FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS},
+use winapi::{
+    shared::{
+        ntdef::NULL,
+        winerror::HRESULT_CODE
+    },
+    um::{
+        errhandlingapi::GetLastError,
+        winbase::{FormatMessageW, FORMAT_MESSAGE_FROM_SYSTEM, FORMAT_MESSAGE_IGNORE_INSERTS},
+    },
 };
 
 /// A Windows API Error
@@ -40,9 +45,13 @@ pub struct Error {
 /// Retrieve the last error. Equivilent to windows API call GetLastError().
 pub fn last_error() -> Error {
     let code = unsafe { GetLastError() };
-    Error { code }
+    Error::with_code(code)
 }
-
+/// Creates an error from the HRESULT value.
+pub fn from_hresult(hr: i32) -> Error {
+    let code = HRESULT_CODE(hr) as u32;
+    Error::with_code(code)
+}
 impl Error {
     /// Retrieve the last error. Equivilent to windows API call GetLastError().
     pub fn last() -> Self {
@@ -55,6 +64,10 @@ impl Error {
     /// Creates an error with the specified code.
     pub fn with_code(code: u32) -> Self {
         Self { code }
+    }
+    /// Creates an error from the HRESULT value.
+    pub fn from_hresult(hr: i32) -> Self {
+        from_hresult(hr)
     }
 }
 
